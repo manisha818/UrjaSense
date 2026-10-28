@@ -1,0 +1,28 @@
+# Python environment
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Test cache
+.pytest_cache/
+.mypy_cache/
+.coverage
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup files
+backup_task1_20261014_202012/
+README_backup_before_forecast.md
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Editor files
+.vscode/
+.DS_Store
