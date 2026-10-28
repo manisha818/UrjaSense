@@ -11,8 +11,8 @@ The project uses simulated electricity data to demonstrate how software and mach
 - **Daily Consumption:** View daily electricity usage.
 - **Consumption Trends:** Analyze changes in energy consumption over time.
 - **Anomaly Detection:** Identify unusual readings using the Isolation Forest algorithm.
-- **Energy-Saving Recommendations:** Generate suggestions based on detected usage patterns and readings.
-- **Electricity Bill Estimation:** Estimate electricity charges using consumption and a configurable rate.
+- **Energy-Saving Recommendations:** Generate suggestions based on available consumption data.
+- **Electricity Bill Estimation:** Estimate electricity charges using consumption and a configurable per-unit rate.
 - **Usage Pattern Clustering:** Group consumption patterns into Low, Medium, and High categories using K-Means clustering.
 - **Next-Day Forecasting:** Predict next-day electricity consumption using recent daily consumption averages.
 - **Forecast Storage:** Save generated forecasts in the database.
@@ -45,7 +45,6 @@ The project uses simulated electricity data to demonstrate how software and mach
 
 ```text
 UrjaSense/
-|
 |-- backend/
 |   |-- app/
 |   |   |-- api/
@@ -57,31 +56,26 @@ UrjaSense/
 |   |   |-- services/
 |   |   |-- simulator/
 |   |   |-- main.py
-|   |
 |   |-- db/
-|
 |-- frontend/
 |   |-- dashboard.py
-|
 |-- migrations/
 |   |-- versions/
-|
 |-- tests/
-|
 |-- alembic.ini
 |-- requirements.txt
 |-- README.md
 |-- .gitignore
 ```
 
-The structure above shows the main project directories. Some directories may contain additional files and modules.
+This is a simplified overview of the main project directories. Individual directories may contain additional files and modules.
 
 ## Requirements
 
 Before running the project, make sure you have:
 
 - Python installed
-- Git installed (if cloning the repository)
+- Git installed if you want to clone the repository
 - Visual Studio Code or another code editor
 
 ## Installation and Setup
@@ -93,11 +87,11 @@ git clone https://github.com/manisha818/UrjaSense.git
 cd UrjaSense
 ```
 
-If the project is already present on your computer, open the existing UrjaSense folder in VS Code instead.
+If the project is already available on your computer, open the existing UrjaSense folder in VS Code instead.
 
 ### 2. Create a Virtual Environment
 
-On Windows, run:
+Run the following command from the project root:
 
 ```powershell
 python -m venv .venv
@@ -105,13 +99,13 @@ python -m venv .venv
 
 ### 3. Activate the Virtual Environment
 
-For PowerShell:
+For Windows PowerShell:
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
 ```
 
-If activation is blocked by the PowerShell execution policy, use the VS Code Command Prompt terminal and run:
+If PowerShell blocks activation, open a Command Prompt terminal in VS Code and run:
 
 ```cmd
 .venv\Scripts\activate.bat
@@ -119,13 +113,13 @@ If activation is blocked by the PowerShell execution policy, use the VS Code Com
 
 ### 4. Install Dependencies
 
-```bash
+```powershell
 python -m pip install -r requirements.txt
 ```
 
 ### 5. Apply Database Migrations
 
-```bash
+```powershell
 python -m alembic upgrade head
 ```
 
@@ -133,7 +127,7 @@ This applies the database schema migrations configured in the project.
 
 ### 6. Start the Backend
 
-```bash
+```powershell
 python -m uvicorn backend.app.main:app --reload
 ```
 
@@ -148,21 +142,21 @@ Keep the backend terminal running while using the dashboard.
 
 Open a second terminal in VS Code, activate the same virtual environment, and run:
 
-```bash
+```powershell
 python -m streamlit run frontend/dashboard.py
 ```
 
-Streamlit will display the local dashboard URL in the terminal. Open that URL in your browser.
+Open the local URL displayed in the terminal by Streamlit.
 
 ## API Endpoints
 
-The backend provides versioned REST API endpoints for health checks, device and reading management, analytics, bill estimation, anomaly detection, recommendations, usage-pattern clustering, and forecasting.
+The backend provides REST API endpoints for health checks, device and reading management, analytics, bill estimation, anomaly detection, recommendations, usage-pattern clustering, and forecasting.
 
-Two forecasting endpoints are:
+The forecasting endpoints include:
 
 | Method | Endpoint | Purpose |
 | --- | --- | --- |
-| GET | `/api/v1/forecast/{device_id}` | Generate and store a next-day consumption forecast |
+| GET | `/api/v1/forecast/{device_id}` | Generate a next-day consumption forecast |
 | GET | `/api/v1/forecast/{device_id}/accuracy` | Evaluate saved forecasts against actual consumption |
 
 Replace `{device_id}` with a valid device ID.
@@ -173,7 +167,9 @@ http://127.0.0.1:8000/docs
 
 ## Forecasting and Accuracy Tracking
 
-UrjaSense estimates next-day electricity consumption using recent completed daily consumption totals.
+### Next-Day Forecast
+
+The forecasting service estimates next-day electricity consumption using recent completed daily consumption totals.
 
 The forecasting workflow:
 
@@ -183,13 +179,29 @@ The forecasting workflow:
 4. Compares saved forecasts with actual consumption when matching completed daily data becomes available.
 5. Calculates Mean Absolute Error (MAE) to measure prediction error.
 
-MAE represents the average absolute difference between predicted and actual consumption. A lower MAE indicates smaller prediction errors for the evaluated records.
+The forecast response can include the device ID, forecast date, predicted consumption, historical days used, forecasting method, and status information, depending on the endpoint response.
 
-Forecast accuracy cannot be calculated when suitable matching actual consumption data is unavailable.
+### Forecast Accuracy
+
+The accuracy service compares saved forecasts with actual recorded consumption for matching completed dates.
+
+It can report:
+
+- **Matched Forecast Days:** Number of forecast dates with available actual consumption.
+- **Mean Absolute Error (MAE):** Average absolute difference between predicted and actual consumption.
+- **Predicted vs. Actual Consumption:** Comparison of predicted consumption, actual consumption, and absolute error.
+
+The MAE formula is:
+
+**MAE = Sum of Absolute Prediction Errors / Number of Matched Days**
+
+A lower MAE indicates smaller average prediction errors for the evaluated records.
+
+Accuracy is unavailable when no suitable matching actual consumption data exists. This may occur when a forecast date is in the future or the corresponding actual readings have not been recorded.
 
 ## Electricity Bill Estimation
 
-The application estimates electricity charges using the recorded or calculated consumption and the configured per-unit rate.
+The application estimates electricity charges using the consumption value and configured per-unit rate.
 
 **Formula:**
 
@@ -203,7 +215,7 @@ For example, if consumption is 69.080 kWh and the configured rate is Rs. 9.50 pe
 69.080 x 9.50 = Rs. 656.26
 ```
 
-This is an illustrative estimate. Actual electricity bills may differ because of fixed charges, taxes, slab rates, subsidies, and other applicable fees.
+This is an illustrative energy-charge estimate. Actual electricity bills may differ because of fixed charges, taxes, slab rates, subsidies, and other applicable fees.
 
 ## Machine Learning Components
 
@@ -217,19 +229,19 @@ K-Means groups consumption data into Low, Medium, and High usage patterns based 
 
 ### 3. Consumption Forecasting
 
-The current forecasting method uses recent completed daily consumption averages. It provides a baseline prediction and is not a guarantee of future usage.
+The current forecasting method uses recent completed daily consumption averages. It provides a baseline prediction and does not guarantee future consumption.
 
 ## Running Tests
 
 From the project root, activate the virtual environment and run:
 
-```bash
+```powershell
 python -m pytest -v --ignore=backup_task1_20261014_202012
 ```
 
 This command excludes the specified backup directory from test discovery.
 
-The test results displayed in the terminal show how many tests passed or failed in the current run. Run the tests again after making code changes to verify the current project state.
+**Last verified test result: 49 passed.** Run the tests again after making code changes to verify the current state.
 
 ## Limitations
 
@@ -237,7 +249,8 @@ The test results displayed in the terminal show how many tests passed or failed 
 - Predictions depend on the available historical consumption data.
 - Forecast accuracy requires matching actual consumption records.
 - Bill calculations are estimates and may not represent the final utility bill.
-- Anomaly detection identifies unusual data points; it does not independently confirm the cause of an unusual reading.
+- Anomaly detection identifies unusual data points but does not independently confirm their cause.
+- Clustering and anomaly detection results depend on the amount and quality of available data.
 
 ## Future Improvements
 
@@ -249,10 +262,11 @@ Possible future enhancements include:
 - More detailed energy-saving recommendations.
 - User authentication and role-based access.
 - Additional dashboard filters and reporting options.
+- Deployment for remote access.
 
 ## Project Purpose
 
-UrjaSense was developed as a third-year Computer Science and Information Technology college project to apply Python programming, backend development, database management, data analytics, visualization, and introductory machine learning to an electricity consumption use case.
+UrjaSense was developed as a third-year Computer Science and Information Technology college project to apply Python programming, backend development, database management, data analytics, visualization, and introductory machine learning to an electricity-consumption use case.
 
 ## License
 
